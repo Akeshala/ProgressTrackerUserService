@@ -1,12 +1,17 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProgressTrackerUserService.ViewModels
 {
-    public class UserLoginModel
+    public class UserRegisterModel
     {
+        [Required]
+        [MaxLength(50)]
+        public string FirstName { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string LastName { get; set; }
+
         [Required]
         [EmailAddress]
         [MaxLength(100)]
@@ -16,6 +21,7 @@ namespace ProgressTrackerUserService.ViewModels
         [MinLength(6)]
         public string Password { get; set; }
 
-        public bool RememberMe { get; set; }
+        [MaxLength(100)]
+        public string University { get; set; }
     }
 }

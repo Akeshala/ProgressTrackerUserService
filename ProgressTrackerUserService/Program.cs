@@ -14,8 +14,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout";
+        options.LoginPath = "/User/Login";
+        options.LogoutPath = "/User/Logout";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
         options.SlidingExpiration = true; // Refresh cookie expiration time on each request
         options.Cookie.HttpOnly = true; // Prevent access to the cookie via JavaScript

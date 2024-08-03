@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProgressTrackerUserService.Models
 {
-    public class User
+    public class UserModel
     {
         [Key]
         public int UserId { get; set; }
@@ -31,12 +31,12 @@ namespace ProgressTrackerUserService.Models
 
         public DateTime DateCreated { get; set; }
 
-        public User()
+        public UserModel()
         {
             DateCreated = DateTime.UtcNow;
         }
 
-        public User(int userId, string firstName, string lastName, string email, string passwordHash, string university)
+        public UserModel(int userId, string firstName, string lastName, string email, string passwordHash, string university)
         {
             UserId = userId;
             FirstName = firstName;
