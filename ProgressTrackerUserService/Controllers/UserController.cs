@@ -1,32 +1,55 @@
 using Microsoft.AspNetCore.Mvc;
+using ProgressTrackerUserService.Models;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using ProgressTrackerUserService.Data;
+using ProgressTrackerUserService.Utils;
+using ProgressTrackerUserService.ViewModels;
 
-namespace ProgressTrackerUserService.Controllers;
-
-[ApiController]
-[Route("[controller]")]
-public class WeatherForecastController : ControllerBase
+namespace ProgressTrackerUserService.Controllers
 {
-    private static readonly string[] Summaries = new[]
+    [ApiController]
+    [Route("[controller]")]
+    public class UserController : ControllerBase
     {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+        private readonly AppDbContext _context;
+        private readonly ILogger<UserController> _logger;
 
-    private readonly ILogger<WeatherForecastController> _logger;
+        public UserController(AppDbContext context, ILogger<UserController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
-    {
-        _logger = logger;
-    }
-
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
-    {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        [HttpGet("view/{id}")]
+        public async Task<IActionResult> ViewUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
             {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                return NotFound();
+            }
+            return Ok(new { user.UserId, user.FirstName, user.LastName, user.Email, user.University });
+        }
+        
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = _context.Users.SingleOrDefault(u => u.Email == model.Email);
+                if (user == null || !SecurityLib.VerifyPassword(model.Password, user.PasswordHash))
+                {
+                    _logger.LogWarning($"Invalid login attempt for email: {model.Email}");
+                    return Unauthorized("Invalid email or password.");
+                }
+
+                _logger.LogInformation($"User logged in: {user.Email}");
+
+                return Ok(new { user.UserId, user.FirstName, user.LastName, user.Email });
+            }
+
+            return BadRequest(ModelState);
+        }
     }
 }

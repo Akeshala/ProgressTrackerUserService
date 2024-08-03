@@ -5,12 +5,11 @@ using ProgressTrackerUserService.Models;
 
 namespace ProgressTrackerUserService.Data
 {
-    public class DbContext : DbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
 
-        public DbContext(DbContextOptions<DbContext> options)
-            : base(options)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
 
