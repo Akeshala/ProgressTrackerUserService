@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DdlMappings">
+    <mapping uuid="8c45751d-2169-4556-b8e4-4f3345492aa2" name="progress-tracker@progress-tracker.database.windows.net Mapping">
+      <data-sources db="7ec13537-0a6d-484b-8f05-889180a40f22" ddl="3bf27894-c887-4c5b-b527-fda2adfd1fd9" />
+    </mapping>
+  </component>
+  <component name="SqlDataSourceStorage">
+    <option name="dataSources">
+      <list>
+        <State>
+          <option name="id" value="3bf27894-c887-4c5b-b527-fda2adfd1fd9" />
+          <option name="name" value="progress-tracker@progress-tracker.database.windows.net (DDL)" />
+          <option name="dbmsName" value="AZURE" />
+          <option name="urls">
+            <array />
+          </option>
+          <option name="outLayout" value="File per object by schema.groovy" />
+        </State>
+      </list>
+    </option>
+  </component>
+</project>

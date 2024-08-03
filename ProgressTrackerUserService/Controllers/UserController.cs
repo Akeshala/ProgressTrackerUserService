@@ -1,9 +1,10 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ProgressTrackerUserService.Data;
 using ProgressTrackerUserService.Models;
 using ProgressTrackerUserService.Utils;
@@ -25,7 +26,7 @@ namespace ProgressTrackerUserService.Controllers
         }
 
         [HttpGet("view/{id}")]
-        [Authorize]  // Requires authentication for this specific action
+        [Authorize]
         public async Task<IActionResult> ViewUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -34,6 +35,7 @@ namespace ProgressTrackerUserService.Controllers
                 _logger.LogWarning($"User with ID {id} not found.");
                 return NotFound();
             }
+
             return Ok(new { user.UserId, user.FirstName, user.LastName, user.Email, user.University });
         }
 
@@ -70,7 +72,7 @@ namespace ProgressTrackerUserService.Controllers
         }
 
         [HttpGet("edit/{id}")]
-        [Authorize]  // Requires authentication for this specific action
+        [Authorize]
         public async Task<IActionResult> GetEditUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -93,7 +95,7 @@ namespace ProgressTrackerUserService.Controllers
         }
 
         [HttpPut("edit")]
-        [Authorize]  // Requires authentication for this specific action
+        [Authorize]
         public async Task<IActionResult> EditUser([FromBody] UserEditModel model)
         {
             if (!ModelState.IsValid)
@@ -125,7 +127,7 @@ namespace ProgressTrackerUserService.Controllers
             _logger.LogInformation($"User updated: {existingUser.Email}");
             return Ok(existingUser);
         }
-        
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginModel model)
         {
@@ -142,27 +144,26 @@ namespace ProgressTrackerUserService.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
             };
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ProgressTrackerKey123456789123456789"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var authProperties = new AuthenticationProperties
+            var token = new JwtSecurityToken(
+                issuer: "yourdomain.com",
+                audience: "yourdomain.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            return Ok(new
             {
-                IsPersistent = model.RememberMe
-            };
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-
-            return Ok(new { message = "Login successful!" });
-        }
-
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Ok(new { message = "Logout successful!" });
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expiration = token.ValidTo
+            });
         }
     }
 }
